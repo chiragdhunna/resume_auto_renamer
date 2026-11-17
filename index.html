@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chirag Dhunna — Resume Renamer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar & subtle animations */
+        body {
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+        .drop-zone-active {
+            border-color: #6366f1 !important;
+            background-color: rgba(99, 102, 241, 0.08) !important;
+            transform: scale(1.01);
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.6);
+        }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-200 selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#0B0F19]/70 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-semibold text-sm sm:text-base tracking-tight flex items-center gap-2">
+                        Resume Renamer
+                        <span class="text-[11px] font-mono uppercase px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 font-medium">Client-Side</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Instant standardized naming for job applications</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Vercel Deploy Info Button -->
+                <button id="deployModalBtn" class="text-xs font-medium px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 76 65" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+                    <span>Vercel Ready</span>
+                </button>
+
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" aria-label="Toggle Theme" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
+                    <i data-lucide="sun" id="sunIcon" class="w-4 h-4 hidden"></i>
+                    <i data-lucide="moon" id="moonIcon" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow flex items-center justify-center px-4 py-8 sm:py-12">
+        <div class="w-full max-w-2xl space-y-6">
+
+            <!-- Live Target Filename Preview Banner -->
+            <div class="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-48 h-48 bg-brand-500/5 dark:bg-brand-500/10 rounded-full blur-2xl -mr-20 -mt-20 pointer-events-none"></div>
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Output Filename Preview</span>
+                        </div>
+                        <div class="font-mono text-sm sm:text-base md:text-lg font-semibold text-slate-800 dark:text-slate-100 break-all flex items-center flex-wrap">
+                            <span id="previewBase" class="text-brand-600 dark:text-brand-400">Chirag_Dhunna</span><span id="previewSep1" class="text-slate-400">_</span><span id="previewDate" class="text-emerald-600 dark:text-emerald-400">17_11_2026</span><span id="previewExt" class="text-amber-600 dark:text-amber-400">.pdf</span>
+                        </div>
+                    </div>
+
+                    <button id="copyFilenameBtn" class="shrink-0 self-start sm:self-center inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 transition active:scale-95">
+                        <i data-lucide="copy" class="w-3.5 h-3.5" id="copyIcon"></i>
+                        <span id="copyBtnText">Copy Name</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Card -->
+            <div class="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 sm:p-7 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-6">
+                
+                <!-- Drag and Drop Upload Zone -->
+                <div>
+                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.rtf,.odt,.pages,.tex" />
+                    
+                    <!-- Empty Upload State -->
+                    <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-400 rounded-2xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-200 bg-slate-50/60 dark:bg-slate-800/20 group">
+                        <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-500/10 border border-brand-200/60 dark:border-brand-500/20 flex items-center justify-center mx-auto mb-4 text-brand-600 dark:text-brand-400 group-hover:scale-110 group-hover:bg-brand-500 group-hover:text-white transition-all duration-200 shadow-sm">
+                            <i data-lucide="upload-cloud" class="w-7 h-7"></i>
+                        </div>
+                        <h2 class="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
+                            Drop your resume here, or <span class="text-brand-600 dark:text-brand-400 underline underline-offset-4">browse</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                            Supports PDF, DOCX, DOC, TXT, LaTeX, or any document format. Processed 100% locally in your browser.
+                        </p>
+                    </div>
+
+                    <!-- Uploaded File State (Hidden by default) -->
+                    <div id="fileLoadedCard" class="hidden border border-brand-500/30 dark:border-brand-500/40 bg-brand-50/40 dark:bg-brand-950/20 rounded-2xl p-4 sm:p-5 transition-all">
+                        <div class="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
+                            <div class="flex items-center gap-3.5 min-w-0 w-full">
+                                <div class="w-12 h-12 rounded-xl bg-brand-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-brand-500/20">
+                                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Ready to Rename</span>
+                                        <span id="originalFileSize" class="text-xs text-slate-500 dark:text-slate-400 font-mono">245 KB</span>
+                                    </div>
+                                    <p id="originalFileName" class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate mt-1" title="">
+                                        my_old_resume_final_v2.pdf
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                                <button id="changeFileBtn" class="text-xs font-medium px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                    <span>Replace</span>
+                                </button>
+                                <button id="removeFileBtn" aria-label="Remove file" class="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customization Controls -->
+                <div class="pt-2 border-t border-slate-200/70 dark:border-slate-800/80">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                            <span>Naming Parameters</span>
+                        </h3>
+                        <button id="resetDefaultsBtn" class="text-xs text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 font-medium">
+                            <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                            Reset to Today
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Base Name Input -->
+                        <div class="space-y-1.5">
+                            <label for="baseNameInput" class="block text-xs font-medium text-slate-600 dark:text-slate-300">
+                                Candidate Prefix / Base Name
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="baseNameInput" 
+                                    value="Chirag_Dhunna" 
+                                    placeholder="Chirag_Dhunna"
+                                    class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 font-mono text-slate-800 dark:text-slate-100 transition"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Date Picker Input -->
+                        <div class="space-y-1.5">
+                            <label for="dateInput" class="block text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                                <span>Target Date (<span class="font-mono">DD_MM_YYYY</span>)</span>
+                                <span id="todayBadge" class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Today</span>
+                            </label>
+                            <input 
+                                type="date" 
+                                id="dateInput" 
+                                class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 font-mono text-slate-800 dark:text-slate-100 transition"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Options Bar: Separator & Auto-download toggle -->
+                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <!-- Auto-download switch -->
+                        <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+                            <input type="checkbox" id="autoDownloadToggle" class="sr-only peer" checked>
+                            <div class="w-10 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all relative peer-checked:bg-brand-600"></div>
+                            <div>
+                                <span class="text-xs font-medium text-slate-700 dark:text-slate-200 block">Auto-download immediately on file drop</span>
+                                <span class="text-[11px] text-slate-400 dark:text-slate-500 block">Saves a click when dragging your resume</span>
+                            </div>
+                        </label>
+
+                        <!-- Date Separator Format -->
+                        <div class="flex items-center gap-2 self-start sm:self-center">
+                            <span class="text-xs text-slate-500 dark:text-slate-400">Separator:</span>
+                            <div class="inline-flex rounded-lg p-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                                <button type="button" data-sep="_" class="sep-btn px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm transition">_</button>
+                                <button type="button" data-sep="-" class="sep-btn px-2.5 py-1 rounded-md text-xs font-mono font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">-</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Action Button -->
+                <div class="pt-1">
+                    <button 
+                        id="downloadBtn" 
+                        disabled
+                        class="w-full py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-brand-500/25 active:scale-[0.99]"
+                    >
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        <span id="downloadBtnText">Upload a Resume to Rename & Download</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Renames History Log (Session Only) -->
+            <div id="historySection" class="hidden bg-white/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800/70 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                        <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                        <span>Recent Downloads (This Session)</span>
+                    </h4>
+                    <button id="clearHistoryBtn" class="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">Clear</button>
+                </div>
+                <ul id="historyList" class="space-y-2 text-xs"></ul>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-5 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-400 dark:text-slate-500">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p class="flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+                <span>Privacy first: Your resume never leaves your device.</span>
+            </p>
+            <p class="font-mono text-[11px]">Format: <span class="text-slate-600 dark:text-slate-300">Chirag_Dhunna_{DD_MM_YYYY}.ext</span></p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-xl border border-slate-700 dark:border-slate-200 flex items-center gap-2.5 text-xs sm:text-sm font-medium">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0"></i>
+            <span id="toastMessage">File renamed & downloaded!</span>
+        </div>
+    </div>
+
+    <!-- Vercel Deployment Instructions Modal -->
+    <div id="deployModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 76 65"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-base">Deploy to Vercel in 30 Seconds</h3>
+                </div>
+                <button id="closeModalBtn" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 space-y-3 leading-relaxed">
+                <p>This entire app is self-contained inside a single <code class="font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-brand-600 dark:text-brand-400">index.html</code> file with zero build step required.</p>
+                <ol class="list-decimal list-inside space-y-2 text-slate-700 dark:text-slate-300">
+                    <li>Save this file as <code class="font-mono font-semibold">index.html</code> inside a new folder.</li>
+                    <li>Push the folder to a GitHub repository, <strong>or</strong> use the Vercel CLI:
+                        <div class="mt-1.5 p-2.5 rounded-lg bg-slate-950 text-slate-100 font-mono text-xs flex items-center justify-between">
+                            <span>npx vercel --prod</span>
+                        </div>
+                    </li>
+                    <li>Alternatively, drag and drop the folder directly onto <span class="underline">vercel.com/new</span>.</li>
+                </ol>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button id="gotItModalBtn" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition">
+                    Got it, thanks!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Application State
+        const state = {
+            file: null,
+            baseName: 'Chirag_Dhunna',
+            separator: '_',
+            extension: '.pdf',
+            dateStr: '', // YYYY-MM-DD for input[type="date"]
+            autoDownload: true,
+            history: []
+        };
+
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileLoadedCard = document.getElementById('fileLoadedCard');
+        const originalFileName = document.getElementById('originalFileName');
+        const originalFileSize = document.getElementById('originalFileSize');
+        const changeFileBtn = document.getElementById('changeFileBtn');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+
+        const baseNameInput = document.getElementById('baseNameInput');
+        const dateInput = document.getElementById('dateInput');
+        const todayBadge = document.getElementById('todayBadge');
+        const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
+        const autoDownloadToggle = document.getElementById('autoDownloadToggle');
+        const sepButtons = document.querySelectorAll('.sep-btn');
+
+        const previewBase = document.getElementById('previewBase');
+        const previewSep1 = document.getElementById('previewSep1');
+        const previewDate = document.getElementById('previewDate');
+        const previewExt = document.getElementById('previewExt');
+
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadBtnText = document.getElementById('downloadBtnText');
+        const copyFilenameBtn = document.getElementById('copyFilenameBtn');
+        const copyBtnText = document.getElementById('copyBtnText');
+
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        const deployModalBtn = document.getElementById('deployModalBtn');
+        const deployModal = document.getElementById('deployModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const gotItModalBtn = document.getElementById('gotItModalBtn');
+
+        // Helper: Get local today's date in YYYY-MM-DD
+        function getTodayISO() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Helper: Convert YYYY-MM-DD to DD_MM_YYYY (using selected separator)
+        function formatToDDMMYYYY(isoDate, sep = '_') {
+            if (!isoDate) return '';
+            const parts = isoDate.split('-');
+            if (parts.length !== 3) return '';
+            const [yyyy, mm, dd] = parts;
+            return `${dd}${sep}${mm}${sep}${yyyy}`;
+        }
+
+        // Helper: Format file size in human-readable units
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Helper: Extract extension including the dot (e.g., ".pdf")
+        function extractExtension(filename) {
+            const lastDot = filename.lastIndexOf('.');
+            if (lastDot === -1 || lastDot === 0) return '';
+            return filename.slice(lastDot);
+        }
+
+        // Helper: Construct full output filename
+        function getTargetFilename() {
+            const cleanBase = (state.baseName.trim() || 'Chirag_Dhunna').replace(/[\/\\:*?"<>|]/g, '_');
+            const formattedDate = formatToDDMMYYYY(state.dateStr, state.separator);
+            return `${cleanBase}${state.separator}${formattedDate}${state.extension}`;
+        }
+
+        // Update Live Preview & Button States
+        function updateUI() {
+            const cleanBase = (state.baseName.trim() || 'Chirag_Dhunna').replace(/[\/\\:*?"<>|]/g, '_');
+            const formattedDate = formatToDDMMYYYY(state.dateStr, state.separator);
+
+            previewBase.textContent = cleanBase;
+            previewSep1.textContent = state.separator;
+            previewDate.textContent = formattedDate;
+            previewExt.textContent = state.extension;
+
+            // Check if date matches today
+            const isToday = state.dateStr === getTodayISO();
+            todayBadge.classList.toggle('hidden', !isToday);
+
+            const fullTargetName = getTargetFilename();
+
+            if (state.file) {
+                dropZone.classList.add('hidden');
+                fileLoadedCard.classList.remove('hidden');
+                originalFileName.textContent = state.file.name;
+                originalFileName.title = state.file.name;
+                originalFileSize.textContent = formatBytes(state.file.size);
+
+                downloadBtn.disabled = false;
+                downloadBtnText.textContent = `Download as "${fullTargetName}"`;
+            } else {
+                dropZone.classList.remove('hidden');
+                fileLoadedCard.classList.add('hidden');
+                downloadBtn.disabled = true;
+                downloadBtnText.textContent = 'Upload a Resume to Rename & Download';
+            }
+        }
+
+        // Trigger Toast Notification
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        // Perform Client-Side Rename & Download
+        function triggerRenameAndDownload() {
+            if (!state.file) return;
+
+            const newFilename = getTargetFilename();
+            const blobUrl = URL.createObjectURL(state.file);
+
+            const tempLink = document.createElement('a');
+            tempLink.href = blobUrl;
+            tempLink.download = newFilename;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+
+            // Clean up object URL after a short delay
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+
+            // Add to session history
+            addHistoryEntry(state.file.name, newFilename, state.file);
+            showToast(`Downloaded "${newFilename}"`);
+        }
+
+        // Add entry to session download history
+        function addHistoryEntry(oldName, newName, fileObj) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            state.history.unshift({ oldName, newName, timeStr, fileObj });
+            if (state.history.length > 5) state.history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (state.history.length === 0) {
+                historySection.classList.add('hidden');
+                return;
+            }
+            historySection.classList.remove('hidden');
+            historyList.innerHTML = '';
+
+            state.history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800';
+                li.innerHTML = `
+                    <div class="min-w-0 flex items-center gap-2.5">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span>
+                        <div class="min-w-0">
+                            <p class="font-mono font-medium text-slate-800 dark:text-slate-200 truncate">${item.newName}</p>
+                            <p class="text-[11px] text-slate-400 truncate">From: ${item.oldName} • ${item.timeStr}</p>
+                        </div>
+                    </div>
+                    <button data-index="${index}" class="redownload-btn shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-slate-700 hover:bg-brand-50 dark:hover:bg-slate-600 text-brand-600 dark:text-brand-300 border border-slate-200 dark:border-slate-600 transition">
+                        Save Again
+                    </button>
+                `;
+                historyList.appendChild(li);
+            });
+
+            document.querySelectorAll('.redownload-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+                    const item = state.history[idx];
+                    if (item && item.fileObj) {
+                        const url = URL.createObjectURL(item.fileObj);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = item.newName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 3000);
+                        showToast(`Re-downloaded "${item.newName}"`);
+                    }
+                });
+            });
+        }
+
+        // Handle Incoming File Selection / Drop
+        function handleFileUpload(file) {
+            if (!file) return;
+            state.file = file;
+            const ext = extractExtension(file.name);
+            state.extension = ext || '.pdf';
+            updateUI();
+
+            if (state.autoDownload) {
+                triggerRenameAndDownload();
+            } else {
+                showToast('Resume loaded! Click "Download" to save.');
+            }
+        }
+
+        // Event Listeners: Drag & Drop
+        dropZone.addEventListener('click', () => fileInput.click());
+        changeFileBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach(evtName => {
+            dropZone.addEventListener(evtName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('drop-zone-active');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evtName => {
+            dropZone.addEventListener(evtName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('drop-zone-active');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+                fileInput.files = files;
+                handleFileUpload(files[0]);
+            }
+        });
+
+        // Also allow dropping anywhere on the window for convenience
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.target !== dropZone && !dropZone.contains(e.target)) {
+                const files = e.dataTransfer?.files;
+                if (files && files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            }
+        });
+
+        // Remove file button
+        removeFileBtn.addEventListener('click', () => {
+            state.file = null;
+            state.extension = '.pdf';
+            fileInput.value = '';
+            updateUI();
+        });
+
+        // Inputs & Customization
+        baseNameInput.addEventListener('input', (e) => {
+            state.baseName = e.target.value;
+            updateUI();
+        });
+
+        dateInput.addEventListener('input', (e) => {
+            state.dateStr = e.target.value;
+            updateUI();
+        });
+
+        autoDownloadToggle.addEventListener('change', (e) => {
+            state.autoDownload = e.target.checked;
+        });
+
+        sepButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.separator = btn.getAttribute('data-sep');
+                sepButtons.forEach(b => {
+                    b.className = 'sep-btn px-2.5 py-1 rounded-md text-xs font-mono font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+                });
+                btn.className = 'sep-btn px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm transition';
+                updateUI();
+            });
+        });
+
+        resetDefaultsBtn.addEventListener('click', () => {
+            state.baseName = 'Chirag_Dhunna';
+            state.dateStr = getTodayISO();
+            state.separator = '_';
+            baseNameInput.value = state.baseName;
+            dateInput.value = state.dateStr;
+            sepButtons[0].click();
+            updateUI();
+            showToast('Reset to Chirag_Dhunna & today\'s date');
+        });
+
+        // Download Button
+        downloadBtn.addEventListener('click', triggerRenameAndDownload);
+
+        // Copy Filename to Clipboard (using fallback-safe method for iframes & modern browsers)
+        copyFilenameBtn.addEventListener('click', () => {
+            const filename = getTargetFilename();
+            const textArea = document.createElement('textarea');
+            textArea.value = filename;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                copyBtnText.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtnText.textContent = 'Copy Name';
+                }, 2000);
+                showToast(`Copied "${filename}" to clipboard`);
+            } catch (err) {
+                showToast('Failed to copy filename');
+            }
+            document.body.removeChild(textArea);
+        });
+
+        // Clear History
+        clearHistoryBtn.addEventListener('click', () => {
+            state.history = [];
+            renderHistory();
+        });
+
+        // Theme Toggle
+        function updateThemeIcons() {
+            const isDark = document.documentElement.classList.contains('dark');
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            updateThemeIcons();
+        });
+
+        // Vercel Modal Controls
+        deployModalBtn.addEventListener('click', () => {
+            deployModal.classList.remove('hidden');
+            deployModal.classList.add('flex');
+        });
+
+        [closeModalBtn, gotItModalBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                deployModal.classList.add('hidden');
+                deployModal.classList.remove('flex');
+            });
+        });
+
+        deployModal.addEventListener('click', (e) => {
+            if (e.target === deployModal) {
+                deployModal.classList.add('hidden');
+                deployModal.classList.remove('flex');
+            }
+        });
+
+        // Initialize on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            state.dateStr = getTodayISO();
+            dateInput.value = state.dateStr;
+            updateThemeIcons();
+            updateUI();
+        });
+    </script>
+</body>
+</html>
